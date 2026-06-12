@@ -85,6 +85,31 @@ How to use it:
 
 The blueprint uses the same Docker image that powers local demo runs, so the container behavior stays consistent between local and deployed environments.
 
+### No-Card Demo With Cloudflare Quick Tunnel
+
+If a hosting provider asks for a credit card, use the local Docker stack and expose it with a free Cloudflare Quick Tunnel instead.
+
+Cloudflare documents Quick Tunnels as free tunnels for testing and development. They generate a random public URL that proxies traffic to a localhost service.
+
+Steps:
+
+1. Start the app locally:
+
+```bash
+docker compose up --build
+```
+
+2. In another terminal, install `cloudflared` and run:
+
+```bash
+cloudflared tunnel --url http://localhost:4000
+```
+
+3. Copy the generated public URL from the terminal and share that link with reviewers.
+4. Sign in with `supervisor@industryops.local` / `IndustryOps123!`.
+
+This is the fastest no-card demo path for the current repo. It is suitable for portfolio sharing, not for long-lived production hosting.
+
 ### Small VPS
 
 A single VPS is enough for a demo or small internal pilot:
