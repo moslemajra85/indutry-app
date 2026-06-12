@@ -112,6 +112,14 @@ npm run start:prod
 
 The bundled Render blueprint uses the free tier for both the web service and database, which is enough for a portfolio demo. Render's free Postgres tier has a 30-day limit, so treat it as demo infrastructure rather than permanent hosting.
 
+For a no-card public portfolio demo, install `cloudflared` and run:
+
+```bash
+npm run demo:tunnel
+```
+
+This starts the Docker Compose app, waits for `/health`, and opens a Cloudflare Quick Tunnel to `http://localhost:4000`.
+
 ## Optional Local AI
 
 Start Ollama with the AI profile:
@@ -136,6 +144,7 @@ Set `AI_ENABLED=true` in `.env` for local development. If Ollama is disabled or 
 | `npm run dev:web` | Start the Vite frontend |
 | `npm run db:migrate` | Create database tables and seed demo records |
 | `npm run build` | Build backend and frontend into `dist/` |
+| `npm run demo:tunnel` | Start the Docker demo stack and expose it through a Cloudflare Quick Tunnel |
 | `npm start` | Run the production build |
 | `npm test` | Run unit tests |
 | `npm run typecheck` | Type-check backend and frontend |

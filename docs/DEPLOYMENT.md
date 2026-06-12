@@ -93,13 +93,24 @@ Cloudflare documents Quick Tunnels as free tunnels for testing and development. 
 
 Steps:
 
+1. Install `cloudflared`.
+2. Start the local stack and tunnel with one command:
+
+```bash
+npm run demo:tunnel
+```
+
+The script starts the Docker Compose app, waits for `/health`, then opens a Cloudflare Quick Tunnel to `http://localhost:4000`.
+
+Manual fallback:
+
 1. Start the app locally:
 
 ```bash
 docker compose up --build
 ```
 
-2. In another terminal, install `cloudflared` and run:
+2. In another terminal, run:
 
 ```bash
 cloudflared tunnel --url http://localhost:4000
