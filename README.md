@@ -60,6 +60,7 @@ PostgreSQL is exposed on host port `15432` by default to avoid conflicts with lo
 ## How To Use The App
 
 The dashboard requires a demo sign-in before operational APIs can be used.
+The public demo path uses in-memory data, so it is isolated from the PostgreSQL-backed app.
 
 Demo accounts:
 
@@ -118,7 +119,7 @@ For a no-card public portfolio demo, install `cloudflared` and run:
 npm run demo:tunnel
 ```
 
-This starts the Docker Compose app, waits for `/health`, and opens a Cloudflare Quick Tunnel to `http://localhost:4000`.
+This starts the in-memory Docker demo, waits for `/health`, and opens a Cloudflare Quick Tunnel to `http://localhost:4000`.
 
 ## Optional Local AI
 
@@ -144,7 +145,8 @@ Set `AI_ENABLED=true` in `.env` for local development. If Ollama is disabled or 
 | `npm run dev:web` | Start the Vite frontend |
 | `npm run db:migrate` | Create database tables and seed demo records |
 | `npm run build` | Build backend and frontend into `dist/` |
-| `npm run demo:tunnel` | Start the Docker demo stack and expose it through a Cloudflare Quick Tunnel |
+| `npm run demo:tunnel` | Start the in-memory demo app and expose it through a Cloudflare Quick Tunnel |
+| `npm run start:demo` | Run the production build without PostgreSQL using in-memory demo data |
 | `npm start` | Run the production build |
 | `npm test` | Run unit tests |
 | `npm run typecheck` | Type-check backend and frontend |

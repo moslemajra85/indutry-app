@@ -1,5 +1,7 @@
 import { Pool } from "pg";
+import { demoStore } from "../../demo/demo-store";
 import { pool } from "../../infra/database/pool";
+import { env } from "../../shared/config/env";
 import type { AuditEvent, CreateAuditEventInput } from "./audit.types";
 
 interface AuditEventRow {
@@ -30,6 +32,10 @@ export class AuditRepository {
   constructor(private readonly db: Pool = pool) {}
 
   async listRecent(limit = 30): Promise<AuditEvent[]> {
+    if (env.demoMode) {
+      return demoStore.listAuditEvents(limit);
+    }
+
     const result = await this.db.query<AuditEventRow>(
       `SELECT id, actor, action, entity_type, entity_id, summary, metadata, created_at
        FROM audit_events
@@ -42,6 +48,10 @@ export class AuditRepository {
   }
 
   async create(input: CreateAuditEventInput): Promise<AuditEvent> {
+    if (env.demoMode) {
+      return demoStore.createAuditEvent(input);
+    }
+
     const result = await this.db.query<AuditEventRow>(
       `INSERT INTO audit_events (actor, action, entity_type, entity_id, summary, metadata)
        VALUES ($1, $2, $3, $4, $5, $6)

@@ -29,7 +29,8 @@ AI_ENABLED=true docker compose --profile ai up --build
 | --- | --- | --- | --- |
 | `NODE_ENV` | No | `development` | Runtime mode |
 | `PORT` | No | `4000` | API port |
-| `DATABASE_URL` | Yes | Local Compose URL | PostgreSQL connection string |
+| `DEMO_MODE` | No | `false` | Switches repositories and health checks to the in-memory demo store |
+| `DATABASE_URL` | No | Local Compose URL | PostgreSQL connection string |
 | `ALLOWED_ORIGINS` | No | Local dev origins | CORS allow-list |
 | `AUTH_TOKEN_SECRET` | Yes | Demo-only local secret | Signing secret for auth tokens; use a long random value in deployed environments |
 | `AI_ENABLED` | No | `false` | Enables Ollama requests |
@@ -100,7 +101,7 @@ Steps:
 npm run demo:tunnel
 ```
 
-The script starts the Docker Compose app, waits for `/health`, then opens a Cloudflare Quick Tunnel to `http://localhost:4000`.
+The script starts the in-memory Docker demo, waits for `/health`, then opens a Cloudflare Quick Tunnel to `http://localhost:4000`.
 
 Manual fallback:
 
@@ -120,6 +121,8 @@ cloudflared tunnel --url http://localhost:4000
 4. Sign in with `supervisor@industryops.local` / `IndustryOps123!`.
 
 This is the fastest no-card demo path for the current repo. It is suitable for portfolio sharing, not for long-lived production hosting.
+
+The real PostgreSQL-backed application stays in the same GitHub repository and continues to run as the default production path.
 
 ### Small VPS
 

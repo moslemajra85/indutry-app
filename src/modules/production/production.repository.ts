@@ -1,5 +1,7 @@
 import { Pool } from "pg";
+import { demoStore } from "../../demo/demo-store";
 import { pool } from "../../infra/database/pool";
+import { env } from "../../shared/config/env";
 import type {
   CreateProductionLineInput,
   ProductionLine,
@@ -32,6 +34,10 @@ export class ProductionRepository {
   constructor(private readonly db: Pool = pool) {}
 
   async list(): Promise<ProductionLine[]> {
+    if (env.demoMode) {
+      return demoStore.listProductionLines();
+    }
+
     const result = await this.db.query<ProductionLineRow>(
       `SELECT id, code, name, area, target_per_hour, status, created_at
        FROM production_lines
@@ -42,6 +48,10 @@ export class ProductionRepository {
   }
 
   async create(input: CreateProductionLineInput): Promise<ProductionLine> {
+    if (env.demoMode) {
+      return demoStore.createProductionLine(input);
+    }
+
     const result = await this.db.query<ProductionLineRow>(
       `INSERT INTO production_lines (code, name, area, target_per_hour, status)
        VALUES ($1, $2, $3, $4, $5)
@@ -53,6 +63,10 @@ export class ProductionRepository {
   }
 
   async updateStatus(id: string, status: ProductionLineStatus): Promise<ProductionLine | null> {
+    if (env.demoMode) {
+      return demoStore.updateProductionLineStatus(id, status);
+    }
+
     const result = await this.db.query<ProductionLineRow>(
       `UPDATE production_lines
        SET status = $2

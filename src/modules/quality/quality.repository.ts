@@ -1,5 +1,7 @@
 import { Pool } from "pg";
+import { demoStore } from "../../demo/demo-store";
 import { pool } from "../../infra/database/pool";
+import { env } from "../../shared/config/env";
 import type {
   CreateQualityInspectionInput,
   QualityInspection,
@@ -67,6 +69,10 @@ export class QualityRepository {
   constructor(private readonly db: Pool = pool) {}
 
   async listRecent(limit = 20): Promise<QualityInspection[]> {
+    if (env.demoMode) {
+      return demoStore.listQualityInspections(limit);
+    }
+
     const result = await this.db.query<QualityInspectionRow>(
       `SELECT qi.id,
               qi.line_id,
@@ -90,6 +96,10 @@ export class QualityRepository {
   }
 
   async create(input: CreateQualityInspectionInput): Promise<QualityInspection> {
+    if (env.demoMode) {
+      return demoStore.createQualityInspection(input);
+    }
+
     const result = await this.db.query<QualityInspectionRow>(
       `INSERT INTO quality_inspections (
          line_id,
@@ -127,6 +137,10 @@ export class QualityRepository {
   }
 
   async getSummary(): Promise<QualitySummary> {
+    if (env.demoMode) {
+      return demoStore.getQualitySummary();
+    }
+
     const result = await this.db.query<QualitySummaryRow>(
       `SELECT COUNT(*) AS total_inspections,
               COUNT(*) FILTER (WHERE status = 'failed') AS failed_inspections,

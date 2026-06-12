@@ -1,5 +1,7 @@
 import { Pool } from "pg";
+import { demoStore } from "../../demo/demo-store";
 import { pool } from "../../infra/database/pool";
+import { env } from "../../shared/config/env";
 import type {
   CreateMaintenanceTicketInput,
   MaintenancePriority,
@@ -37,6 +39,10 @@ export class MaintenanceRepository {
   constructor(private readonly db: Pool = pool) {}
 
   async list(): Promise<MaintenanceTicket[]> {
+    if (env.demoMode) {
+      return demoStore.listMaintenanceTickets();
+    }
+
     const result = await this.db.query<MaintenanceTicketRow>(
       `SELECT mt.id,
               mt.line_id,
@@ -56,6 +62,10 @@ export class MaintenanceRepository {
   }
 
   async create(input: CreateMaintenanceTicketInput): Promise<MaintenanceTicket> {
+    if (env.demoMode) {
+      return demoStore.createMaintenanceTicket(input);
+    }
+
     const result = await this.db.query<MaintenanceTicketRow>(
       `INSERT INTO maintenance_tickets (line_id, title, description, priority, status)
        VALUES ($1, $2, $3, $4, 'open')
@@ -75,6 +85,10 @@ export class MaintenanceRepository {
   }
 
   async updateStatus(id: string, status: MaintenanceStatus): Promise<MaintenanceTicket | null> {
+    if (env.demoMode) {
+      return demoStore.updateMaintenanceTicketStatus(id, status);
+    }
+
     const result = await this.db.query<MaintenanceTicketRow>(
       `UPDATE maintenance_tickets
        SET status = $2,

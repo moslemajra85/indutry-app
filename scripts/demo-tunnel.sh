@@ -40,7 +40,7 @@ docker compose version >/dev/null 2>&1 || {
 }
 
 printf '%s\n' "Starting IndustryOps demo stack..."
-docker compose up --build -d app
+docker compose -f docker-compose.demo.yml up --build -d app
 
 printf '%s' "Waiting for ${HEALTH_URL}"
 elapsed=0
@@ -49,7 +49,7 @@ until request_url "$HEALTH_URL"; do
 
   if [ "$elapsed" -ge "$MAX_WAIT_SECONDS" ]; then
     printf '\n%s\n' "The app did not become healthy within ${MAX_WAIT_SECONDS} seconds."
-    printf '%s\n' "Check container logs with: docker compose logs app postgres"
+    printf '%s\n' "Check container logs with: docker compose -f docker-compose.demo.yml logs app"
     exit 1
   fi
 
@@ -59,6 +59,6 @@ done
 
 printf '\n%s\n' "Demo app is ready at ${APP_URL}"
 printf '%s\n' "Opening a Cloudflare Quick Tunnel. Copy the public trycloudflare.com URL printed below."
-printf '%s\n' "Press Ctrl+C to stop the tunnel. Containers keep running; stop them with: docker compose down"
+printf '%s\n' "Press Ctrl+C to stop the tunnel. Containers keep running; stop them with: docker compose -f docker-compose.demo.yml down"
 
 cloudflared tunnel --url "$APP_URL"

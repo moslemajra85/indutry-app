@@ -1,5 +1,7 @@
 import { Pool } from "pg";
+import { demoStore } from "../../demo/demo-store";
 import { pool } from "../../infra/database/pool";
+import { env } from "../../shared/config/env";
 import type {
   CreateProductionEventInput,
   ProductionEvent,
@@ -78,6 +80,10 @@ export class ProductionEventsRepository {
   constructor(private readonly db: Pool = pool) {}
 
   async listRecent(limit = 20): Promise<ProductionEvent[]> {
+    if (env.demoMode) {
+      return demoStore.listProductionEvents(limit);
+    }
+
     const result = await this.db.query<ProductionEventRow>(
       `SELECT pe.id,
               pe.line_id,
@@ -102,6 +108,10 @@ export class ProductionEventsRepository {
   }
 
   async create(input: CreateProductionEventInput): Promise<ProductionEvent> {
+    if (env.demoMode) {
+      return demoStore.createProductionEvent(input);
+    }
+
     const result = await this.db.query<ProductionEventRow>(
       `INSERT INTO production_events (
          line_id,
@@ -142,6 +152,10 @@ export class ProductionEventsRepository {
   }
 
   async getSummary(): Promise<ProductionKpiSummary> {
+    if (env.demoMode) {
+      return demoStore.getProductionKpiSummary();
+    }
+
     const result = await this.db.query<ProductionKpiSummaryRow>(
       `SELECT COUNT(*) AS logged_events,
               COALESCE(SUM(good_units), 0) AS total_good_units,

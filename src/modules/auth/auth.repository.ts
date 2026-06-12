@@ -1,5 +1,7 @@
 import { Pool } from "pg";
 import { pool } from "../../infra/database/pool";
+import { env } from "../../shared/config/env";
+import { demoStore } from "../../demo/demo-store";
 import type { UserRecord, UserRole } from "./auth.types";
 
 interface UserRow {
@@ -26,6 +28,10 @@ export class AuthRepository {
   constructor(private readonly db: Pool = pool) {}
 
   async findByEmail(email: string): Promise<UserRecord | null> {
+    if (env.demoMode) {
+      return demoStore.findUserByEmail(email);
+    }
+
     const result = await this.db.query<UserRow>(
       `SELECT id, name, email, role, password_hash, created_at
        FROM app_users

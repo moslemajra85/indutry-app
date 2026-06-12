@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: industry-ops-demo-app
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DEMO_MODE: "true"
+      AI_ENABLED: "false"
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET:-development-auth-secret-change-before-production}
+      ALLOWED_ORIGINS: http://localhost:4000,http://127.0.0.1:4000
+    command: ["npm", "run", "start:demo"]
+    ports:
+      - "4000:4000"

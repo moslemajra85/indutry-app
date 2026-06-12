@@ -8,6 +8,10 @@ const envSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
   PORT: z.coerce.number().int().positive().default(4000),
+  DEMO_MODE: z
+    .string()
+    .default("false")
+    .transform((value) => value === "true"),
   DATABASE_URL: z
     .string()
     .url()
@@ -27,6 +31,7 @@ const parsed = envSchema.parse(process.env);
 export const env = {
   nodeEnv: parsed.NODE_ENV,
   port: parsed.PORT,
+  demoMode: parsed.DEMO_MODE,
   databaseUrl: parsed.DATABASE_URL,
   allowedOrigins: parsed.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()),
   authTokenSecret: parsed.AUTH_TOKEN_SECRET,
