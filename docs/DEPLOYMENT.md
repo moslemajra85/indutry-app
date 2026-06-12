@@ -69,6 +69,13 @@ What the blueprint does:
 - Sets the app to production mode.
 - Points CORS at the Render subdomain for this app.
 
+The blueprint is configured for Render's free tier:
+
+- Web service: `free`
+- Postgres: `free` tier with a 30-day limit
+
+That is fine for a portfolio demo. It is not a long-term production database plan.
+
 How to use it:
 
 1. Push `main` to GitHub.

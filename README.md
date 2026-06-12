@@ -110,6 +110,8 @@ For container platforms and Render-style deployments, the production startup pat
 npm run start:prod
 ```
 
+The bundled Render blueprint uses the free tier for both the web service and database, which is enough for a portfolio demo. Render's free Postgres tier has a 30-day limit, so treat it as demo infrastructure rather than permanent hosting.
+
 ## Optional Local AI
 
 Start Ollama with the AI profile:
