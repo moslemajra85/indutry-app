@@ -121,6 +121,26 @@ npm run demo:tunnel
 
 This starts the in-memory Docker demo, waits for `/health`, and opens a Cloudflare Quick Tunnel to `http://localhost:4000`.
 
+## Vercel Demo
+
+The repo also supports a Vercel deployment for the in-memory demo version.
+
+Vercel Hobby is free forever according to Vercel's pricing page, which makes it a good no-card hosting option for a portfolio demo.
+
+What happens on Vercel:
+
+- `DEMO_MODE` auto-enables from the Vercel environment.
+- The API runs from the `api/` serverless functions.
+- The frontend is built into `dist/public`.
+- `/health` is rewritten to the serverless health endpoint.
+
+To deploy:
+
+1. Import the GitHub repo into Vercel.
+2. Keep the default build command from `vercel.json`.
+3. Deploy the project.
+4. Open the Vercel URL and sign in with `supervisor@industryops.local` / `IndustryOps123!`.
+
 ## Optional Local AI
 
 Start Ollama with the AI profile:

@@ -124,6 +124,28 @@ This is the fastest no-card demo path for the current repo. It is suitable for p
 
 The real PostgreSQL-backed application stays in the same GitHub repository and continues to run as the default production path.
 
+### No-Card Demo With Vercel
+
+If you want a hosted demo URL without managing a server, deploy the in-memory version to Vercel.
+
+Vercel's Hobby plan is free forever. That makes it a good fit for a portfolio demo when you do not want to use a credit card.
+
+How it works:
+
+- `DEMO_MODE` turns on automatically when Vercel is detected.
+- The API is served from serverless functions in `api/`.
+- The frontend is built into `dist/public`.
+- `/health` is rewritten to the Vercel health function.
+
+Steps:
+
+1. Import the GitHub repository into Vercel.
+2. Let Vercel read `vercel.json`.
+3. Deploy the project.
+4. Open the Vercel URL and sign in with `supervisor@industryops.local` / `IndustryOps123!`.
+
+Use this when you want a permanent-ish demo URL without running your own tunnel. Keep the PostgreSQL-backed app in GitHub for the full version of the product.
+
 ### Small VPS
 
 A single VPS is enough for a demo or small internal pilot:

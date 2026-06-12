@@ -10,8 +10,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   DEMO_MODE: z
     .string()
-    .default("false")
-    .transform((value) => value === "true"),
+    .optional()
+    .transform((value) => value === "true" || (!value && process.env.VERCEL === "1")),
   DATABASE_URL: z
     .string()
     .url()
@@ -27,13 +27,15 @@ const envSchema = z.object({
 });
 
 const parsed = envSchema.parse(process.env);
+const vercelOrigin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+const allowedOrigins = parsed.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim());
 
 export const env = {
   nodeEnv: parsed.NODE_ENV,
   port: parsed.PORT,
   demoMode: parsed.DEMO_MODE,
   databaseUrl: parsed.DATABASE_URL,
-  allowedOrigins: parsed.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()),
+  allowedOrigins: vercelOrigin ? [...new Set([...allowedOrigins, vercelOrigin])] : allowedOrigins,
   authTokenSecret: parsed.AUTH_TOKEN_SECRET,
   aiEnabled: parsed.AI_ENABLED,
   ollamaBaseUrl: parsed.OLLAMA_BASE_URL,
