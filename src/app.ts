@@ -20,6 +20,7 @@ import { logger } from "./shared/logger/logger";
 
 export function createApp() {
   const app = express();
+  const exposeRootApi = env.demoMode || process.env.VERCEL === "1";
 
   app.use(helmet());
   app.use(
@@ -31,15 +32,11 @@ export function createApp() {
   app.use(pinoHttp({ logger }));
 
   app.use("/health", healthRouter);
-  app.use("/api/auth", authRouter);
-  app.use("/api", requireAuth);
-  app.use("/api/alerts", alertsRouter);
-  app.use("/api/audit-events", auditRouter);
-  app.use("/api/production-lines", productionRouter);
-  app.use("/api/production-events", productionEventsRouter);
-  app.use("/api/quality-inspections", qualityRouter);
-  app.use("/api/maintenance-tickets", maintenanceRouter);
-  app.use("/api/ai", aiRouter);
+  mountApiRoutes(app, "/api");
+
+  if (exposeRootApi) {
+    mountApiRoutes(app, "");
+  }
 
   const publicDir = path.join(process.cwd(), "dist", "public");
   const indexFile = path.join(publicDir, "index.html");
@@ -59,4 +56,16 @@ export function createApp() {
   app.use(errorHandler);
 
   return app;
+}
+
+function mountApiRoutes(app: express.Express, prefix: string) {
+  app.use(`${prefix}/auth`, authRouter);
+  app.use(prefix || "/", requireAuth);
+  app.use(`${prefix}/alerts`, alertsRouter);
+  app.use(`${prefix}/audit-events`, auditRouter);
+  app.use(`${prefix}/production-lines`, productionRouter);
+  app.use(`${prefix}/production-events`, productionEventsRouter);
+  app.use(`${prefix}/quality-inspections`, qualityRouter);
+  app.use(`${prefix}/maintenance-tickets`, maintenanceRouter);
+  app.use(`${prefix}/ai`, aiRouter);
 }
