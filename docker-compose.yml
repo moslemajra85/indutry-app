@@ -14,7 +14,7 @@ services:
       AI_ENABLED: ${AI_ENABLED:-false}
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
-    command: ["sh", "-c", "node dist/infra/database/migrate.js && node dist/server.js"]
+    command: ["npm", "run", "start:prod"]
     ports:
       - "4000:4000"
 

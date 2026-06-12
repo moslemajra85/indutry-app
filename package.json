@@ -10,6 +10,7 @@
     "build:api": "tsc -p tsconfig.server.json",
     "build:web": "vite build --config web/vite.config.ts",
     "start": "node dist/server.js",
+    "start:prod": "node dist/infra/database/migrate.js && node dist/server.js",
     "db:migrate": "tsx src/infra/database/migrate.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p web/tsconfig.json"

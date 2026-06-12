@@ -15,6 +15,7 @@ docker compose up --build
 ```
 
 For local Docker demos, Compose runs the compiled migration before the API starts.
+The same startup path is also available directly as `npm run start:prod`.
 
 With AI:
 
@@ -55,6 +56,27 @@ npm run db:migrate
 The current migration creates tables and seeds demo data. For a production deployment, replace this with a versioned migration tool so each schema change is tracked and repeatable.
 
 ## Deployment Options
+
+### Render Portfolio Demo
+
+This repo includes a `render.yaml` blueprint so you can deploy the app and its PostgreSQL database from GitHub.
+
+What the blueprint does:
+
+- Creates a Docker-based web service.
+- Creates a managed PostgreSQL instance.
+- Generates `AUTH_TOKEN_SECRET` on first deployment.
+- Sets the app to production mode.
+- Points CORS at the Render subdomain for this app.
+
+How to use it:
+
+1. Push `main` to GitHub.
+2. Create a new Render Blueprint from this repository.
+3. Let Render provision the web service and database.
+4. Open the web URL and sign in with `supervisor@industryops.local` / `IndustryOps123!`.
+
+The blueprint uses the same Docker image that powers local demo runs, so the container behavior stays consistent between local and deployed environments.
 
 ### Small VPS
 

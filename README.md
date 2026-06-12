@@ -104,6 +104,12 @@ Open `http://localhost:4000`.
 
 Compose runs the compiled migration before starting the API so the demo environment is ready without a separate migration command.
 
+For container platforms and Render-style deployments, the production startup path is the same one used by Compose:
+
+```bash
+npm run start:prod
+```
+
 ## Optional Local AI
 
 Start Ollama with the AI profile:
@@ -161,8 +167,8 @@ Set `AI_ENABLED=true` in `.env` for local development. If Ollama is disabled or 
 - [Architecture](docs/ARCHITECTURE.md)
 - [API Reference](docs/API.md)
 - [Authentication And Roles](docs/AUTHENTICATION.md)
-- [AI Integration](docs/AI.md)
 - [Deployment](docs/DEPLOYMENT.md)
+- [AI Integration](docs/AI.md)
 - [Production Readiness](docs/PRODUCTION_READINESS.md)
 - [How The App Works](docs/HOW_IT_WORKS.md)
 - [User Stories](docs/USER_STORIES.md)
