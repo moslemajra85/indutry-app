@@ -1,0 +1,59 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: industry-ops-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgres://industry:industry@postgres:5432/industry_ops
+      ALLOWED_ORIGINS: http://localhost:4000
+      AI_ENABLED: ${AI_ENABLED:-false}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
+    command: ["sh", "-c", "node dist/infra/database/migrate.js && node dist/server.js"]
+    ports:
+      - "4000:4000"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: industry-ops-postgres
+    environment:
+      POSTGRES_USER: industry
+      POSTGRES_PASSWORD: industry
+      POSTGRES_DB: industry_ops
+    ports:
+      - "${POSTGRES_PORT:-15432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U industry -d industry_ops"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: industry-ops-ollama
+    profiles: ["ai"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: industry-ops-ollama-pull
+    profiles: ["ai"]
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["sh", "-c", "sleep 8 && ollama pull ${OLLAMA_MODEL:-tinyllama}"]
+
+volumes:
+  postgres-data:
+  ollama-data:

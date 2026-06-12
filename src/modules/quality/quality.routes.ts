@@ -1,0 +1,47 @@
+import { Router } from "express";
+import { AuditService } from "../audit/audit.service";
+import { asyncHandler } from "../../shared/http/async-handler";
+import { QualityService } from "./quality.service";
+import { createQualityInspectionSchema } from "./quality.validation";
+
+export const qualityRouter = Router();
+const service = new QualityService();
+const auditService = new AuditService();
+
+qualityRouter.get(
+  "/",
+  asyncHandler(async (_req, res) => {
+    res.json({ data: await service.listRecentInspections() });
+  }),
+);
+
+qualityRouter.post(
+  "/",
+  asyncHandler(async (req, res) => {
+    const input = createQualityInspectionSchema.parse(req.body);
+    const inspection = await service.createInspection(input);
+
+    await auditService.record({
+      actor: inspection.inspectorName,
+      action: "quality.inspection.created",
+      entityType: "quality_inspection",
+      entityId: inspection.id,
+      summary: `${inspection.status} inspection recorded for ${inspection.lineCode}`,
+      metadata: {
+        lineId: inspection.lineId,
+        severity: inspection.severity,
+        sampleSize: inspection.sampleSize,
+        defectCount: inspection.defectCount,
+      },
+    });
+
+    res.status(201).json({ data: inspection });
+  }),
+);
+
+qualityRouter.get(
+  "/summary",
+  asyncHandler(async (_req, res) => {
+    res.json({ data: await service.getSummary() });
+  }),
+);
