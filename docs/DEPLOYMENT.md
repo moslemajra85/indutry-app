@@ -87,9 +87,14 @@ Before showing this to an employer or using it as a portfolio demo:
 
 ## Production Hardening Backlog
 
+The detailed plan is documented in [Production Readiness](PRODUCTION_READINESS.md).
+
+Highest-priority items:
+
 - Add authentication and role-based access control.
-- Add HTTPS and secure cookie policy when auth exists.
-- Add request rate limiting.
-- Add structured audit logs for operational changes.
-- Add backup and restore documentation for PostgreSQL.
-- Add CI pipeline for type-checking, tests, Docker build, and vulnerability scanning.
+- Replace demo migration script with versioned migrations.
+- Store secrets in a production secret manager.
+- Use managed PostgreSQL backups and test restore.
+- Add HTTPS/domain and secure cookie policy when auth exists.
+- Extend CI/CD from verification to deployment.
+- Add monitoring, centralized logs, and uptime alerts.

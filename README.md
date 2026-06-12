@@ -138,6 +138,7 @@ Set `AI_ENABLED=true` in `.env` for local development. If Ollama is disabled or 
 - [API Reference](docs/API.md)
 - [AI Integration](docs/AI.md)
 - [Deployment](docs/DEPLOYMENT.md)
+- [Production Readiness](docs/PRODUCTION_READINESS.md)
 - [How The App Works](docs/HOW_IT_WORKS.md)
 - [User Stories](docs/USER_STORIES.md)
 
