@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { AuditService } from "../audit/audit.service";
+import { getAuthUser, requireRole } from "../auth/auth.middleware";
 import { asyncHandler } from "../../shared/http/async-handler";
 import { MaintenanceService } from "./maintenance.service";
 import {
@@ -20,12 +21,14 @@ maintenanceRouter.get(
 
 maintenanceRouter.post(
   "/",
+  requireRole("admin", "supervisor", "line_leader", "maintenance"),
   asyncHandler(async (req, res) => {
+    const user = getAuthUser(req);
     const input = createMaintenanceTicketSchema.parse(req.body);
     const ticket = await service.createTicket(input);
 
     await auditService.record({
-      actor: "operator",
+      actor: user.email,
       action: "maintenance_ticket.created",
       entityType: "maintenance_ticket",
       entityId: ticket.id,
@@ -39,12 +42,14 @@ maintenanceRouter.post(
 
 maintenanceRouter.patch(
   "/:id/status",
+  requireRole("admin", "supervisor", "maintenance"),
   asyncHandler(async (req, res) => {
+    const user = getAuthUser(req);
     const input = updateMaintenanceStatusSchema.parse(req.body);
     const ticket = await service.changeTicketStatus(req.params.id, input.status);
 
     await auditService.record({
-      actor: "operator",
+      actor: user.email,
       action: "maintenance_ticket.status_changed",
       entityType: "maintenance_ticket",
       entityId: ticket.id,

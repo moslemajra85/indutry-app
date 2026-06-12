@@ -6,6 +6,8 @@ import helmet from "helmet";
 import pinoHttp from "pino-http";
 import { aiRouter } from "./modules/ai/ai.routes";
 import { alertsRouter } from "./modules/alerts/alerts.routes";
+import { authRouter } from "./modules/auth/auth.routes";
+import { requireAuth } from "./modules/auth/auth.middleware";
 import { auditRouter } from "./modules/audit/audit.routes";
 import { healthRouter } from "./modules/health/health.routes";
 import { maintenanceRouter } from "./modules/maintenance/maintenance.routes";
@@ -29,6 +31,8 @@ export function createApp() {
   app.use(pinoHttp({ logger }));
 
   app.use("/health", healthRouter);
+  app.use("/api/auth", authRouter);
+  app.use("/api", requireAuth);
   app.use("/api/alerts", alertsRouter);
   app.use("/api/audit-events", auditRouter);
   app.use("/api/production-lines", productionRouter);

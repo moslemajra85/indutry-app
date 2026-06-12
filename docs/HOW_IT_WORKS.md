@@ -9,6 +9,7 @@ IndustryOps AI is a small factory operations cockpit. It helps a supervisor answ
 3. Where are scrap and downtime creating operational risk?
 4. Which quality or maintenance issue should be handled first?
 5. Is the local AI model actually available?
+6. Which actions is the signed-in role allowed to perform?
 
 The app is not an MES replacement yet. It is an early modular monolith that demonstrates the core workflow an industrial operations tool would need before connecting to PLCs, barcode scanners, ERP, or a real MES.
 
@@ -16,6 +17,7 @@ The app is not an MES replacement yet. It is an early modular monolith that demo
 
 ```mermaid
 flowchart LR
+  SignIn[Sign in with role]
   Setup[Create production line]
   Log[Log shift output]
   Quality[Record quality inspection]
@@ -25,6 +27,10 @@ flowchart LR
   Insight[Generate AI insight]
   Action[Decide next action]
 
+  SignIn --> Setup
+  SignIn --> Log
+  SignIn --> Quality
+  SignIn --> Maintain
   Setup --> Log
   Setup --> Quality
   Log --> Review
@@ -36,6 +42,20 @@ flowchart LR
 ```
 
 ## What Each Area Does
+
+### Authentication And Roles
+
+Users sign in before the dashboard loads operational APIs. The backend returns a signed bearer token and the UI uses the current role to show or lock write forms.
+
+The backend still enforces permissions. This matters because browser controls can be bypassed. A viewer can inspect the dashboard, but cannot create production records through the API.
+
+Main roles:
+
+- Admin and supervisor manage production lines.
+- Line leaders log shift output.
+- Quality users record inspections.
+- Maintenance users create and update maintenance tickets.
+- Viewers have read-only access.
 
 ### Production Lines
 
@@ -157,12 +177,17 @@ The `/api/ai/status` endpoint tells the dashboard whether Ollama and the selecte
 sequenceDiagram
   actor Supervisor
   participant UI as Dashboard
+  participant Auth as Auth API
   participant API as Express API
   participant Module as Domain Module
   participant DB as PostgreSQL
 
+  Supervisor->>UI: Signs in
+  UI->>Auth: POST /api/auth/login
+  Auth-->>UI: Token and role
   Supervisor->>UI: Logs shift output
-  UI->>API: POST /api/production-events
+  UI->>API: POST /api/production-events with bearer token
+  API->>API: Verify token and role
   API->>Module: Validate and create production event
   Module->>DB: Insert event
   DB-->>Module: Saved row
@@ -187,7 +212,7 @@ The important engineering lesson: modular monolith does not mean messy monolith.
 
 ## Current Limitations
 
-- No authentication or roles yet.
+- Authentication is implemented for demo/staging use, but not yet enterprise-grade SSO or full user administration.
 - No audit history for every edit.
 - No date filtering on KPI summaries yet.
 - No machine integration.

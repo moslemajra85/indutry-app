@@ -9,6 +9,7 @@ The product story is intentionally industrial: production lines, shift productio
 - Modular monolith backend design with clear business boundaries.
 - TypeScript across backend and frontend.
 - Express API with validation, error handling, structured logging, and health checks.
+- Demo authentication with role-based authorization for operational actions.
 - PostgreSQL infrastructure with Docker Compose.
 - Optional local AI integration that can run without sending factory data to an external API.
 - Production-oriented documentation, architecture diagrams, and deployment notes.
@@ -58,7 +59,28 @@ PostgreSQL is exposed on host port `15432` by default to avoid conflicts with lo
 
 ## How To Use The App
 
-The dashboard is now interactive:
+The dashboard requires a demo sign-in before operational APIs can be used.
+
+Demo accounts:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@industryops.local` | `IndustryOps123!` |
+| Supervisor | `supervisor@industryops.local` | `IndustryOps123!` |
+| Line leader | `line.leader@industryops.local` | `IndustryOps123!` |
+| Quality | `quality@industryops.local` | `IndustryOps123!` |
+| Maintenance | `maintenance@industryops.local` | `IndustryOps123!` |
+| Viewer | `viewer@industryops.local` | `IndustryOps123!` |
+
+Role behavior:
+
+- Admin and supervisor can manage production lines.
+- Line leaders can log shift output.
+- Quality users can record inspections.
+- Maintenance users can create and update maintenance tickets.
+- Viewers can inspect the dashboard without write access.
+
+Main workflow:
 
 1. Use **Add production line** to create a new factory line.
 2. Use **Log shift output** to record planned minutes, good units, scrap units, downtime, and downtime reason.
@@ -115,6 +137,8 @@ Set `AI_ENABLED=true` in `.env` for local development. If Ollama is disabled or 
 | Method | Path | Description |
 | --- | --- | --- |
 | `GET` | `/health` | API and database health |
+| `POST` | `/api/auth/login` | Sign in and receive a bearer token |
+| `GET` | `/api/auth/me` | Get the authenticated user |
 | `GET` | `/api/alerts` | Derived operational alerts |
 | `GET` | `/api/audit-events` | Recent operational audit events |
 | `GET` | `/api/production-lines` | List production lines |
@@ -136,6 +160,7 @@ Set `AI_ENABLED=true` in `.env` for local development. If Ollama is disabled or 
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [API Reference](docs/API.md)
+- [Authentication And Roles](docs/AUTHENTICATION.md)
 - [AI Integration](docs/AI.md)
 - [Deployment](docs/DEPLOYMENT.md)
 - [Production Readiness](docs/PRODUCTION_READINESS.md)

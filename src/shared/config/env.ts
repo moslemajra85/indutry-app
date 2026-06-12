@@ -13,6 +13,7 @@ const envSchema = z.object({
     .url()
     .default("postgres://industry:industry@localhost:5432/industry_ops"),
   ALLOWED_ORIGINS: z.string().default("http://localhost:5173,http://localhost:4000"),
+  AUTH_TOKEN_SECRET: z.string().min(32).default("development-auth-secret-change-before-production"),
   AI_ENABLED: z
     .string()
     .default("false")
@@ -28,6 +29,7 @@ export const env = {
   port: parsed.PORT,
   databaseUrl: parsed.DATABASE_URL,
   allowedOrigins: parsed.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()),
+  authTokenSecret: parsed.AUTH_TOKEN_SECRET,
   aiEnabled: parsed.AI_ENABLED,
   ollamaBaseUrl: parsed.OLLAMA_BASE_URL,
   ollamaModel: parsed.OLLAMA_MODEL,

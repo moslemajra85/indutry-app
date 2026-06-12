@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { AuditService } from "../audit/audit.service";
+import { getAuthUser, requireRole } from "../auth/auth.middleware";
 import { asyncHandler } from "../../shared/http/async-handler";
 import { QualityService } from "./quality.service";
 import { createQualityInspectionSchema } from "./quality.validation";
@@ -17,12 +18,14 @@ qualityRouter.get(
 
 qualityRouter.post(
   "/",
+  requireRole("admin", "supervisor", "quality"),
   asyncHandler(async (req, res) => {
+    const user = getAuthUser(req);
     const input = createQualityInspectionSchema.parse(req.body);
     const inspection = await service.createInspection(input);
 
     await auditService.record({
-      actor: inspection.inspectorName,
+      actor: user.email,
       action: "quality.inspection.created",
       entityType: "quality_inspection",
       entityId: inspection.id,

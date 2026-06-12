@@ -53,7 +53,7 @@ The trade-off is weaker output quality compared with larger hosted models. That 
 ## AI Status
 
 ```bash
-curl http://localhost:4000/api/ai/status
+curl -H "Authorization: Bearer <token>" http://localhost:4000/api/ai/status
 ```
 
 If `AI_ENABLED=false`, the app reports the deterministic fallback as available. If `AI_ENABLED=true`, the app checks whether Ollama is reachable and whether the configured model is pulled.
@@ -69,14 +69,14 @@ If the image pull is too heavy for your machine, use the app with `AI_ENABLED=fa
 Then call:
 
 ```bash
-curl -X POST http://localhost:4000/api/ai/factory-insight
+curl -X POST -H "Authorization: Bearer <token>" http://localhost:4000/api/ai/factory-insight
 ```
 
 ## Production Caution
 
 Before using this in a real plant, add:
 
-- Authentication and authorization.
+- Enterprise identity hardening beyond the demo role system.
 - Prompt and response logging with sensitive data controls.
 - Human approval for any operational action.
 - Clear disclaimer that AI output is advisory.

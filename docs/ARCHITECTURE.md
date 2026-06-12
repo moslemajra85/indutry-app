@@ -28,6 +28,7 @@ flowchart TB
   Quality[Quality Module]
   Maintenance[Maintenance Module]
   Alerts[Alerts Module]
+  Auth[Auth Module]
   Audit[Audit Module]
   AI[AI Module]
   Health[Health Module]
@@ -37,6 +38,7 @@ flowchart TB
   App --> Quality
   App --> Maintenance
   App --> Alerts
+  App --> Auth
   App --> Audit
   App --> AI
   App --> Health
@@ -44,6 +46,7 @@ flowchart TB
   ProductionEvents --> Infra
   Quality --> Infra
   Maintenance --> Infra
+  Auth --> Infra
   Audit --> Infra
   AI --> Production
   AI --> ProductionEvents
@@ -59,6 +62,7 @@ flowchart TB
   ProductionEvents --> Shared
   Quality --> Shared
   Audit --> Shared
+  Auth --> Shared
   AI --> Shared
   Health --> Infra
 ```
@@ -69,13 +73,18 @@ flowchart TB
 sequenceDiagram
   actor Supervisor
   participant Web as Web Dashboard
+  participant Auth as Auth Module
   participant API as Express API
   participant Module as Business Module
   participant DB as PostgreSQL
 
   Supervisor->>Web: Opens dashboard
-  Web->>API: GET /api/production-lines
-  Web->>API: GET /api/maintenance-tickets
+  Supervisor->>Web: Signs in
+  Web->>Auth: POST /api/auth/login
+  Auth-->>Web: User role and bearer token
+  Web->>API: GET /api/production-lines with token
+  Web->>API: GET /api/maintenance-tickets with token
+  API->>API: Verify authentication
   API->>Module: Execute use case
   Module->>DB: Query factory data
   DB-->>Module: Rows
@@ -95,6 +104,7 @@ src/
   modules/
     ai/                     Local AI insight capability
     alerts/                 Derived operational alert capability
+    auth/                   Sign-in, token verification, and role checks
     audit/                  Operational audit trail
     health/                 Health checks
     maintenance/            Maintenance ticket capability
@@ -182,7 +192,7 @@ Express is simple, stable, and widely understood. TypeScript adds compile-time s
 
 ## Known Limitations
 
-- Authentication and role-based authorization are not implemented yet.
+- Authentication and role-based authorization are implemented for demo/staging use, but not yet enterprise SSO or full user administration.
 - Database migrations are intentionally simple and not versioned.
 - The frontend is intentionally lightweight and does not use a component framework.
 - AI output is advisory only and must not be treated as an automated production decision.
@@ -191,9 +201,17 @@ Express is simple, stable, and widely understood. TypeScript adds compile-time s
 
 ## Next Engineering Milestones
 
-1. Add authentication with supervisor, maintenance, and admin roles.
+1. Add admin user management and production-grade identity hardening.
 2. Replace the simple migration script with versioned migrations.
 3. Replace derived-only alerts with assignable alerts and acknowledgement workflow.
 4. Add line-level KPI filters by date range and shift.
 5. Add integration tests using a real PostgreSQL test container.
 6. Add deployment pipeline and environment-specific configuration.
+  APP_USERS {
+    uuid id PK
+    text name
+    text email UK
+    text role
+    text password_hash
+    timestamptz created_at
+  }

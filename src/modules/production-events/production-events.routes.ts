@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { AuditService } from "../audit/audit.service";
+import { getAuthUser, requireRole } from "../auth/auth.middleware";
 import { asyncHandler } from "../../shared/http/async-handler";
 import { ProductionEventsService } from "./production-events.service";
 import { createProductionEventSchema } from "./production-events.validation";
@@ -17,12 +18,14 @@ productionEventsRouter.get(
 
 productionEventsRouter.post(
   "/",
+  requireRole("admin", "supervisor", "line_leader"),
   asyncHandler(async (req, res) => {
+    const user = getAuthUser(req);
     const input = createProductionEventSchema.parse(req.body);
     const event = await service.createEvent(input);
 
     await auditService.record({
-      actor: event.operatorName,
+      actor: user.email,
       action: "production_event.created",
       entityType: "production_event",
       entityId: event.id,

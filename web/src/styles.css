@@ -32,6 +32,62 @@ body::before {
   min-height: 100vh;
 }
 
+.login-shell {
+  align-items: center;
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.login-panel {
+  backdrop-filter: blur(24px);
+  background:
+    linear-gradient(135deg, rgba(7, 19, 24, 0.82), rgba(15, 36, 43, 0.58)),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.17), rgba(8, 47, 73, 0.08));
+  border: 1px solid rgba(209, 237, 240, 0.22);
+  border-radius: 8px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.46);
+  display: grid;
+  gap: 18px;
+  margin: 0 auto;
+  max-width: 520px;
+  padding: 30px;
+  width: 100%;
+}
+
+.login-panel h1 {
+  margin-bottom: 10px;
+}
+
+.demo-users {
+  background: rgba(5, 17, 22, 0.52);
+  border: 1px solid rgba(209, 237, 240, 0.14);
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  padding: 14px;
+}
+
+.demo-users strong,
+.demo-users span,
+.demo-users small {
+  display: block;
+}
+
+.demo-users strong {
+  color: #ffffff;
+}
+
+.demo-users span {
+  color: rgba(232, 246, 248, 0.74);
+  font-size: 0.9rem;
+}
+
+.demo-users small {
+  color: rgba(232, 246, 248, 0.58);
+  margin-top: 4px;
+}
+
 button {
   border: 0;
   border-radius: 6px;
@@ -112,10 +168,33 @@ label {
 }
 
 .hero-actions {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
+}
+
+.user-badge {
+  background: rgba(5, 17, 22, 0.56);
+  border: 1px solid rgba(209, 237, 240, 0.16);
+  border-radius: 8px;
+  display: grid;
+  gap: 2px;
+  min-width: 160px;
+  padding: 9px 11px;
+}
+
+.user-badge strong {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.user-badge span {
+  color: #5eead4;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: capitalize;
 }
 
 .ai-status {
@@ -315,6 +394,17 @@ h3 {
     linear-gradient(180deg, rgba(20, 184, 166, 0.14), rgba(255, 255, 255, 0.04)),
     rgba(7, 19, 24, 0.66);
   border-color: rgba(94, 234, 212, 0.24);
+}
+
+.locked-panel {
+  align-content: start;
+  border-color: rgba(253, 230, 138, 0.24);
+  min-height: 180px;
+}
+
+.locked-panel p {
+  color: rgba(232, 246, 248, 0.68);
+  line-height: 1.55;
 }
 
 .grid {

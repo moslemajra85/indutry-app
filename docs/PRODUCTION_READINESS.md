@@ -15,12 +15,13 @@ Implemented:
 - Maintenance tickets.
 - Operational alerts.
 - Audit trail.
+- Demo authentication and role-based authorization.
 - Local AI integration path with deterministic fallback.
 - CI workflow for type-checking, tests, build, and Docker image build.
 
 Still required before real production:
 
-- Authentication and roles.
+- Production-grade identity management.
 - Versioned migration tooling.
 - Secure secret handling.
 - Managed database backups.
@@ -36,7 +37,17 @@ Why it matters:
 
 Factory data is operationally sensitive. Not every user should be able to create lines, change maintenance status, or record quality decisions.
 
-Recommended roles:
+Current implementation:
+
+- `app_users` table with seeded demo users.
+- PBKDF2 password hashes.
+- Signed bearer token returned from login.
+- `requireAuth` middleware on operational APIs.
+- `requireRole` middleware on write actions.
+- Audit events now use the authenticated user's email for protected writes.
+- UI locks forms that the current role cannot use.
+
+Implemented roles:
 
 - `admin`: manage users, environment settings, and master data.
 - `supervisor`: manage lines, review KPIs, generate AI insight, create tickets.
@@ -45,19 +56,19 @@ Recommended roles:
 - `maintenance`: update maintenance tickets.
 - `viewer`: read-only dashboard access.
 
-Recommended implementation:
+Still needed for real production:
 
-1. Add a `users` table.
-2. Store password hashes with Argon2 or bcrypt.
-3. Use secure HTTP-only cookies or short-lived JWT access tokens with refresh tokens.
-4. Add middleware such as `requireAuth` and `requireRole`.
-5. Add audit events that include the authenticated user ID.
+1. Replace demo account seeding with admin-managed users or SSO.
+2. Use Argon2id or bcrypt with a reviewed password policy.
+3. Prefer secure HTTP-only cookies or short-lived access tokens with refresh-token rotation.
+4. Add rate limiting and account lockout for login attempts.
+5. Store actor user IDs in audit events with a real foreign key, not only actor email text.
 
 Minimum acceptance criteria:
 
 - Unauthenticated users cannot access operational APIs.
 - Role checks protect write actions.
-- Audit trail records the real actor, not `"operator"`.
+- Audit trail records the authenticated actor.
 
 ## Real Migration Tooling
 
@@ -95,8 +106,8 @@ Production secrets must not live in Git, Docker images, screenshots, or docs.
 Secrets in this app:
 
 - `DATABASE_URL`
+- `AUTH_TOKEN_SECRET`
 - AI runtime URLs or API keys if external AI is added later
-- session/JWT signing secrets after authentication exists
 - SMTP/webhook credentials if notifications are added
 
 Recommended implementation:
@@ -214,6 +225,7 @@ Current tests:
 - Production event normalization.
 - Quality validation.
 - Alert generation.
+- Password hashing and token verification.
 
 Recommended additions:
 
@@ -264,7 +276,7 @@ Minimum acceptance criteria:
 1. Push repository to GitHub.
 2. Use CI on every push.
 3. Deploy staging with managed PostgreSQL.
-4. Add authentication and roles.
+4. Harden authentication and add admin user management.
 5. Replace demo migration script with versioned migrations.
 6. Add backups and restore test.
 7. Add HTTPS/domain.

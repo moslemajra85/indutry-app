@@ -1,8 +1,18 @@
 import { pool } from "./pool";
 import { logger } from "../../shared/logger/logger";
+import { hashPassword } from "../../modules/auth/password";
 
 const schema = `
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS app_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  role TEXT NOT NULL CHECK (role IN ('admin', 'supervisor', 'line_leader', 'quality', 'maintenance', 'viewer')),
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 CREATE TABLE IF NOT EXISTS production_lines (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -140,8 +150,59 @@ SELECT 'system', 'seed', 'database', 'initial-seed', 'Seeded demo production, ma
 WHERE NOT EXISTS (SELECT 1 FROM audit_events);
 `;
 
+const demoUsers = [
+  {
+    name: "Admin User",
+    email: "admin@industryops.local",
+    role: "admin",
+    password: "IndustryOps123!",
+  },
+  {
+    name: "Factory Supervisor",
+    email: "supervisor@industryops.local",
+    role: "supervisor",
+    password: "IndustryOps123!",
+  },
+  {
+    name: "Line Leader",
+    email: "line.leader@industryops.local",
+    role: "line_leader",
+    password: "IndustryOps123!",
+  },
+  {
+    name: "Quality Inspector",
+    email: "quality@industryops.local",
+    role: "quality",
+    password: "IndustryOps123!",
+  },
+  {
+    name: "Maintenance Technician",
+    email: "maintenance@industryops.local",
+    role: "maintenance",
+    password: "IndustryOps123!",
+  },
+  {
+    name: "Read Only Viewer",
+    email: "viewer@industryops.local",
+    role: "viewer",
+    password: "IndustryOps123!",
+  },
+] as const;
+
+async function seedDemoUsers() {
+  for (const user of demoUsers) {
+    await pool.query(
+      `INSERT INTO app_users (name, email, role, password_hash)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (email) DO NOTHING`,
+      [user.name, user.email, user.role, hashPassword(user.password)],
+    );
+  }
+}
+
 async function migrate() {
   await pool.query(schema);
+  await seedDemoUsers();
   logger.info("Database migration completed");
   await pool.end();
 }

@@ -24,7 +24,18 @@ Responsible for reviewing operational KPIs and understanding risk across lines.
 
 ## Core User Stories
 
-### 1. Create a Production Line
+### 1. Sign In With A Role
+
+As an operations user, I want to sign in with my assigned role so that I only see and perform actions that match my responsibility.
+
+Acceptance criteria:
+
+- I can sign in with email and password.
+- The dashboard shows my name and role.
+- Operational APIs reject unauthenticated requests.
+- Write actions are limited by role.
+
+### 2. Create a Production Line
 
 As a factory supervisor, I want to register a production line so that production and maintenance activity can be linked to a real factory resource.
 
@@ -34,7 +45,7 @@ Acceptance criteria:
 - The line appears in the production line list.
 - The line becomes available in production-log and maintenance-ticket forms.
 
-### 2. Change Line Status
+### 3. Change Line Status
 
 As a factory supervisor, I want to change a line status so that the dashboard reflects whether the line is running, paused, or under maintenance.
 
@@ -44,7 +55,7 @@ Acceptance criteria:
 - The dashboard refreshes after the change.
 - KPI and AI context uses the latest line status.
 
-### 3. Log Shift Output
+### 4. Log Shift Output
 
 As a line leader, I want to log shift production output so that supervisors can review good units, scrap, downtime, and shift performance.
 
@@ -56,7 +67,7 @@ Acceptance criteria:
 - The new log appears in recent production logs.
 - KPI cards update after the log is saved.
 
-### 4. Create a Maintenance Ticket
+### 5. Create a Maintenance Ticket
 
 As a supervisor, I want to create a maintenance ticket when a line has a technical issue so that maintenance work is visible and prioritized.
 
@@ -67,7 +78,7 @@ Acceptance criteria:
 - The ticket appears in the maintenance list.
 - The ticket is included in AI insight context.
 
-### 5. Update Maintenance Status
+### 6. Update Maintenance Status
 
 As a maintenance technician, I want to update ticket status so that the team can see whether work is open, in progress, or resolved.
 
@@ -77,7 +88,7 @@ Acceptance criteria:
 - Resolved tickets no longer count as active open tickets.
 - AI insight considers unresolved tickets as operational risk.
 
-### 6. Review Production KPIs
+### 7. Review Production KPIs
 
 As a plant manager, I want to see aggregate KPIs so that I can understand production performance quickly.
 
@@ -87,7 +98,7 @@ Acceptance criteria:
 - Metrics update after production logs are created.
 - KPI definitions are documented.
 
-### 7. Generate Shift Insight
+### 8. Generate Shift Insight
 
 As a factory supervisor, I want to generate a shift insight so that I can quickly identify the most important operational risk.
 
@@ -98,7 +109,7 @@ Acceptance criteria:
 - If AI is disabled, a rules-based fallback is returned.
 - The insight recommends one next action.
 
-### 8. Record Quality Inspection
+### 9. Record Quality Inspection
 
 As a quality inspector, I want to record sample inspections so that the supervisor can see defect risk and containment status.
 
@@ -110,7 +121,7 @@ Acceptance criteria:
 - Failed and blocked inspections create operational alert signals.
 - The inspection appears in the quality history list.
 
-### 9. Review Operational Alerts
+### 10. Review Operational Alerts
 
 As a supervisor, I want alerts to highlight production, quality, and maintenance risk so that I know where to act first.
 
@@ -120,7 +131,7 @@ Acceptance criteria:
 - Critical alerts are visually distinct.
 - Alerts include a clear title and action-oriented message.
 
-### 10. Review Audit Trail
+### 11. Review Audit Trail
 
 As a plant manager or quality responsible, I want an audit trail so that important operational changes are traceable.
 
@@ -139,9 +150,9 @@ As a plant manager, I want to filter KPIs by date and shift so that I can compar
 
 As a supervisor, I want to click a production line and see its production history, downtime reasons, and tickets.
 
-### Authentication and Roles
+### Admin User Management
 
-As an admin, I want users to sign in with roles so that supervisors, line leaders, and maintenance technicians only access the actions they should perform.
+As an admin, I want to invite, disable, and change users so that role access can be managed without database scripts.
 
 ### Audit Log
 

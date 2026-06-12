@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { AuditService } from "../audit/audit.service";
+import { getAuthUser, requireRole } from "../auth/auth.middleware";
 import { asyncHandler } from "../../shared/http/async-handler";
 import { ProductionService } from "./production.service";
 import {
@@ -20,12 +21,14 @@ productionRouter.get(
 
 productionRouter.post(
   "/",
+  requireRole("admin", "supervisor"),
   asyncHandler(async (req, res) => {
+    const user = getAuthUser(req);
     const input = createProductionLineSchema.parse(req.body);
     const line = await service.createLine(input);
 
     await auditService.record({
-      actor: "operator",
+      actor: user.email,
       action: "production_line.created",
       entityType: "production_line",
       entityId: line.id,
@@ -39,12 +42,14 @@ productionRouter.post(
 
 productionRouter.patch(
   "/:id/status",
+  requireRole("admin", "supervisor"),
   asyncHandler(async (req, res) => {
+    const user = getAuthUser(req);
     const input = updateProductionLineStatusSchema.parse(req.body);
     const line = await service.changeLineStatus(req.params.id, input.status);
 
     await auditService.record({
-      actor: "operator",
+      actor: user.email,
       action: "production_line.status_changed",
       entityType: "production_line",
       entityId: line.id,

@@ -7,6 +7,7 @@ type MaintenanceStatus = "open" | "in_progress" | "resolved";
 type QualitySeverity = "low" | "medium" | "high" | "critical";
 type QualityStatus = "passed" | "failed" | "blocked";
 type AlertSeverity = "info" | "warning" | "critical";
+type UserRole = "admin" | "supervisor" | "line_leader" | "quality" | "maintenance" | "viewer";
 
 interface ProductionLine {
   id: string;
@@ -109,6 +110,18 @@ interface AiStatus {
   message: string;
 }
 
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
+interface LoginResponse {
+  user: AuthUser;
+  token: string;
+}
+
 interface ApiResponse<T> {
   data: T;
 }
@@ -123,6 +136,7 @@ interface DashboardState {
   alerts: OperationalAlert[];
   auditEvents: AuditEvent[];
   aiStatus: AiStatus | null;
+  currentUser: AuthUser | null;
   message: string | null;
   insight: AiInsight | null;
 }
@@ -153,6 +167,8 @@ if (!app) {
 }
 
 const appRoot = app;
+const authStorageKey = "industryops.authToken";
+let authToken = localStorage.getItem(authStorageKey);
 
 const state: DashboardState = {
   lines: [],
@@ -164,17 +180,19 @@ const state: DashboardState = {
   alerts: [],
   auditEvents: [],
   aiStatus: null,
+  currentUser: null,
   message: null,
   insight: null,
 };
 
 async function api<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
+    ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...options?.headers,
     },
-    ...options,
   });
 
   if (!response.ok) {
@@ -194,10 +212,16 @@ async function api<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 async function loadDashboard(message?: string) {
+  if (!authToken) {
+    renderLogin();
+    return;
+  }
+
   appRoot.innerHTML = `<section class="state">Loading factory dashboard...</section>`;
 
   try {
     const [
+      currentUser,
       lines,
       events,
       productionKpis,
@@ -208,6 +232,7 @@ async function loadDashboard(message?: string) {
       auditEvents,
       aiStatus,
     ] = await Promise.all([
+      api<ApiResponse<AuthUser>>("/api/auth/me"),
       api<ApiResponse<ProductionLine[]>>("/api/production-lines"),
       api<ApiResponse<ProductionEvent[]>>("/api/production-events"),
       api<ApiResponse<ProductionKpiSummary>>("/api/production-events/summary"),
@@ -219,6 +244,7 @@ async function loadDashboard(message?: string) {
       api<ApiResponse<AiStatus>>("/api/ai/status"),
     ]);
 
+    state.currentUser = currentUser.data;
     state.lines = lines.data;
     state.events = events.data;
     state.productionKpis = productionKpis.data;
@@ -231,6 +257,12 @@ async function loadDashboard(message?: string) {
     state.message = message ?? null;
     renderDashboard();
   } catch (error) {
+    if (errorMessage(error).includes("Authentication")) {
+      logout(false);
+      renderLogin("Your session expired. Sign in again.");
+      return;
+    }
+
     appRoot.innerHTML = `
       <section class="state error">
         <h1>Dashboard unavailable</h1>
@@ -238,6 +270,71 @@ async function loadDashboard(message?: string) {
         <p>Start the API and database, then reload this page.</p>
       </section>
     `;
+  }
+}
+
+function renderLogin(message?: string) {
+  appRoot.innerHTML = `
+    <section class="login-shell">
+      <section class="login-panel">
+        <div>
+          <p class="eyebrow">Secure operations access</p>
+          <h1>IndustryOps AI</h1>
+          <p class="subtitle">Sign in with a demo role to access production, quality, maintenance, audit, and AI workflows.</p>
+        </div>
+        ${message ? `<p class="notice notice-error">${escapeHtml(message)}</p>` : ""}
+        <form id="login-form" class="form">
+          <label>Email<input name="email" type="email" value="supervisor@industryops.local" required /></label>
+          <label>Password<input name="password" type="password" value="IndustryOps123!" required minlength="8" /></label>
+          <button type="submit">Sign in</button>
+        </form>
+        <div class="demo-users">
+          <strong>Demo accounts</strong>
+          <span>admin@industryops.local</span>
+          <span>supervisor@industryops.local</span>
+          <span>line.leader@industryops.local</span>
+          <span>quality@industryops.local</span>
+          <span>maintenance@industryops.local</span>
+          <span>viewer@industryops.local</span>
+          <small>Password for all demo accounts: IndustryOps123!</small>
+        </div>
+      </section>
+    </section>
+  `;
+
+  document.querySelector("#login-form")?.addEventListener("submit", handleLogin);
+}
+
+async function handleLogin(event: Event) {
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const formData = new FormData(form);
+
+  try {
+    const response = await api<ApiResponse<LoginResponse>>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email: getFormString(formData, "email"),
+        password: getFormString(formData, "password"),
+      }),
+    });
+
+    authToken = response.data.token;
+    localStorage.setItem(authStorageKey, response.data.token);
+    state.currentUser = response.data.user;
+    await loadDashboard(`Signed in as ${response.data.user.name}.`);
+  } catch (error) {
+    renderLogin(errorMessage(error));
+  }
+}
+
+function logout(render = true) {
+  authToken = null;
+  localStorage.removeItem(authStorageKey);
+  state.currentUser = null;
+
+  if (render) {
+    renderLogin("Signed out.");
   }
 }
 
@@ -258,8 +355,10 @@ function renderDashboard() {
           ${renderAiStatus()}
         </div>
         <div class="hero-actions">
+          ${renderUserBadge()}
           <button id="refresh-dashboard" class="secondary" type="button">Refresh</button>
           <button id="generate-insight" type="button">Generate AI insight</button>
+          <button id="logout" class="secondary" type="button">Logout</button>
         </div>
       </header>
 
@@ -382,6 +481,19 @@ function renderSectionNav(openTickets: number, criticalAlerts: number) {
   `;
 }
 
+function renderUserBadge() {
+  if (!state.currentUser) {
+    return "";
+  }
+
+  return `
+    <div class="user-badge">
+      <strong>${escapeHtml(state.currentUser.name)}</strong>
+      <span>${formatStatus(state.currentUser.role)}</span>
+    </div>
+  `;
+}
+
 function renderAiStatus() {
   if (!state.aiStatus) {
     return "";
@@ -414,6 +526,10 @@ function renderAlerts() {
 }
 
 function renderProductionLineForm() {
+  if (!canManageLines()) {
+    return lockedPanel("Add production line", "Only admins and supervisors can create production lines.");
+  }
+
   return `
     <section class="panel">
       <div class="section-heading"><h2>Add production line</h2></div>
@@ -430,6 +546,10 @@ function renderProductionLineForm() {
 }
 
 function renderProductionEventForm() {
+  if (!canLogProduction()) {
+    return lockedPanel("Log shift output", "Only admins, supervisors, and line leaders can log shift output.");
+  }
+
   return `
     <section class="panel highlight-panel">
       <div class="section-heading"><h2>Log shift output</h2></div>
@@ -453,6 +573,10 @@ function renderProductionEventForm() {
 }
 
 function renderQualityInspectionForm() {
+  if (!canRecordQuality()) {
+    return lockedPanel("Record quality inspection", "Only admins, supervisors, and quality users can record inspections.");
+  }
+
   return `
     <section class="panel highlight-panel">
       <div class="section-heading"><h2>Record quality inspection</h2></div>
@@ -475,6 +599,10 @@ function renderQualityInspectionForm() {
 }
 
 function renderMaintenanceTicketForm() {
+  if (!canCreateMaintenance()) {
+    return lockedPanel("Create maintenance ticket", "Only admins, supervisors, line leaders, and maintenance users can create tickets.");
+  }
+
   return `
     <section class="panel">
       <div class="section-heading"><h2>Create maintenance ticket</h2></div>
@@ -539,6 +667,7 @@ function renderAuditPanel() {
 function bindDashboardEvents() {
   document.querySelector("#refresh-dashboard")?.addEventListener("click", () => void loadDashboard("Dashboard refreshed."));
   document.querySelector("#generate-insight")?.addEventListener("click", generateInsight);
+  document.querySelector("#logout")?.addEventListener("click", () => logout());
   document.querySelector("#line-form")?.addEventListener("submit", handleCreateLine);
   document.querySelector("#event-form")?.addEventListener("submit", handleCreateProductionEvent);
   document.querySelector("#quality-form")?.addEventListener("submit", handleCreateQualityInspection);
@@ -563,7 +692,7 @@ function renderLine(line: ProductionLine) {
       <div><h3>${escapeHtml(line.code)} · ${escapeHtml(line.name)}</h3><p>${escapeHtml(line.area)}</p></div>
       <div class="item-actions">
         <span class="pill ${line.status}">${formatStatus(line.status)}</span>
-        <label>Change status<select data-line-status="${line.id}">${statusOptions<ProductionLineStatus>(["running", "paused", "maintenance"], line.status)}</select></label>
+        <label>Change status<select data-line-status="${line.id}" ${canManageLines() ? "" : "disabled"}>${statusOptions<ProductionLineStatus>(["running", "paused", "maintenance"], line.status)}</select></label>
       </div>
       <dl><div><dt>Target/hour</dt><dd>${line.targetPerHour}</dd></div></dl>
     </article>
@@ -576,7 +705,7 @@ function renderTicket(ticket: MaintenanceTicket) {
       <div><h3>${escapeHtml(ticket.lineCode)} · ${escapeHtml(ticket.title)}</h3><p>${escapeHtml(ticket.description)}</p></div>
       <div class="item-actions">
         <span class="pill ${ticket.priority}">${formatStatus(ticket.priority)}</span>
-        <label>Change status<select data-ticket-status="${ticket.id}">${statusOptions<MaintenanceStatus>(["open", "in_progress", "resolved"], ticket.status)}</select></label>
+        <label>Change status<select data-ticket-status="${ticket.id}" ${canUpdateMaintenance() ? "" : "disabled"}>${statusOptions<MaintenanceStatus>(["open", "in_progress", "resolved"], ticket.status)}</select></label>
       </div>
       <dl><div><dt>Status</dt><dd>${formatStatus(ticket.status)}</dd></div></dl>
     </article>
@@ -776,6 +905,39 @@ function lineOptions() {
   return state.lines
     .map((line) => `<option value="${line.id}">${escapeHtml(line.code)} · ${escapeHtml(line.name)}</option>`)
     .join("");
+}
+
+function lockedPanel(title: string, message: string) {
+  return `
+    <section class="panel locked-panel">
+      <div class="section-heading"><h2>${escapeHtml(title)}</h2></div>
+      <p>${escapeHtml(message)}</p>
+    </section>
+  `;
+}
+
+function hasRole(...roles: UserRole[]) {
+  return !!state.currentUser && roles.includes(state.currentUser.role);
+}
+
+function canManageLines() {
+  return hasRole("admin", "supervisor");
+}
+
+function canLogProduction() {
+  return hasRole("admin", "supervisor", "line_leader");
+}
+
+function canRecordQuality() {
+  return hasRole("admin", "supervisor", "quality");
+}
+
+function canCreateMaintenance() {
+  return hasRole("admin", "supervisor", "line_leader", "maintenance");
+}
+
+function canUpdateMaintenance() {
+  return hasRole("admin", "supervisor", "maintenance");
 }
 
 function statusOptions<T extends string>(options: T[], selected: T) {

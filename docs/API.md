@@ -19,6 +19,12 @@ Validation and application errors use:
 }
 ```
 
+All `/api/*` endpoints require a bearer token except `POST /api/auth/login`. Get a token by signing in with one of the demo accounts documented in [Authentication And Roles](AUTHENTICATION.md).
+
+```http
+Authorization: Bearer <token>
+```
+
 ## Health
 
 ### `GET /health`
@@ -34,6 +40,39 @@ Checks that the API process is alive and PostgreSQL can be queried.
   }
 }
 ```
+
+## Authentication
+
+### `POST /api/auth/login`
+
+Signs in with email and password.
+
+```json
+{
+  "email": "supervisor@industryops.local",
+  "password": "IndustryOps123!"
+}
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "user": {
+      "id": "0d768de2-e0ce-43a7-9f43-bf3de66d2b22",
+      "name": "Factory Supervisor",
+      "email": "supervisor@industryops.local",
+      "role": "supervisor"
+    },
+    "token": "signed-token"
+  }
+}
+```
+
+### `GET /api/auth/me`
+
+Returns the authenticated user from the bearer token.
 
 ## Alerts
 
@@ -63,6 +102,8 @@ Returns all production lines.
 
 Creates a new production line.
 
+Allowed roles: `admin`, `supervisor`.
+
 ```json
 {
   "code": "WH-02",
@@ -83,6 +124,8 @@ Allowed statuses:
 
 Changes a production line status.
 
+Allowed roles: `admin`, `supervisor`.
+
 ```json
 {
   "status": "maintenance"
@@ -98,6 +141,8 @@ Returns all maintenance tickets with their production line code.
 ### `POST /api/maintenance-tickets`
 
 Creates a maintenance ticket for a production line.
+
+Allowed roles: `admin`, `supervisor`, `line_leader`, `maintenance`.
 
 ```json
 {
@@ -118,6 +163,8 @@ Allowed priorities:
 ### `PATCH /api/maintenance-tickets/:id/status`
 
 Changes a ticket status.
+
+Allowed roles: `admin`, `supervisor`, `maintenance`.
 
 ```json
 {
@@ -140,6 +187,8 @@ Returns the latest production logs. These logs represent shift-level reporting f
 ### `POST /api/production-events`
 
 Logs output, scrap, and downtime for a production line.
+
+Allowed roles: `admin`, `supervisor`, `line_leader`.
 
 ```json
 {
@@ -199,6 +248,8 @@ Returns recent quality inspections.
 ### `POST /api/quality-inspections`
 
 Records a quality inspection.
+
+Allowed roles: `admin`, `supervisor`, `quality`.
 
 ```json
 {

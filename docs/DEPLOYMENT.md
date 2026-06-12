@@ -30,6 +30,7 @@ AI_ENABLED=true docker compose --profile ai up --build
 | `PORT` | No | `4000` | API port |
 | `DATABASE_URL` | Yes | Local Compose URL | PostgreSQL connection string |
 | `ALLOWED_ORIGINS` | No | Local dev origins | CORS allow-list |
+| `AUTH_TOKEN_SECRET` | Yes | Demo-only local secret | Signing secret for auth tokens; use a long random value in deployed environments |
 | `AI_ENABLED` | No | `false` | Enables Ollama requests |
 | `OLLAMA_BASE_URL` | No | `http://localhost:11434` | Ollama server URL |
 | `OLLAMA_MODEL` | No | `tinyllama` | Local model name |
@@ -91,10 +92,10 @@ The detailed plan is documented in [Production Readiness](PRODUCTION_READINESS.m
 
 Highest-priority items:
 
-- Add authentication and role-based access control.
+- Harden authentication with production identity controls.
 - Replace demo migration script with versioned migrations.
 - Store secrets in a production secret manager.
 - Use managed PostgreSQL backups and test restore.
-- Add HTTPS/domain and secure cookie policy when auth exists.
+- Add HTTPS/domain and secure cookie policy if token storage moves to cookies.
 - Extend CI/CD from verification to deployment.
 - Add monitoring, centralized logs, and uptime alerts.
