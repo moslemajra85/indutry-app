@@ -4,6 +4,7 @@ import { getAuthUser, requireRole } from "../auth/auth.middleware";
 import { asyncHandler } from "../../shared/http/async-handler";
 import { QualityService } from "./quality.service";
 import { createQualityInspectionSchema } from "./quality.validation";
+import type { CreateQualityInspectionInput } from "./quality.types";
 
 export const qualityRouter = Router();
 const service = new QualityService();
@@ -21,7 +22,7 @@ qualityRouter.post(
   requireRole("admin", "supervisor", "quality"),
   asyncHandler(async (req, res) => {
     const user = getAuthUser(req);
-    const input = createQualityInspectionSchema.parse(req.body);
+    const input = createQualityInspectionSchema.parse(req.body) as CreateQualityInspectionInput;
     const inspection = await service.createInspection(input);
 
     await auditService.record({

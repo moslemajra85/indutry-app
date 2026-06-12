@@ -4,6 +4,7 @@ import { getAuthUser, requireRole } from "../auth/auth.middleware";
 import { asyncHandler } from "../../shared/http/async-handler";
 import { ProductionEventsService } from "./production-events.service";
 import { createProductionEventSchema } from "./production-events.validation";
+import type { CreateProductionEventInput } from "./production-events.types";
 
 export const productionEventsRouter = Router();
 const service = new ProductionEventsService();
@@ -21,7 +22,7 @@ productionEventsRouter.post(
   requireRole("admin", "supervisor", "line_leader"),
   asyncHandler(async (req, res) => {
     const user = getAuthUser(req);
-    const input = createProductionEventSchema.parse(req.body);
+    const input = createProductionEventSchema.parse(req.body) as CreateProductionEventInput;
     const event = await service.createEvent(input);
 
     await auditService.record({

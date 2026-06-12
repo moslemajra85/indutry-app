@@ -7,6 +7,7 @@ import {
   createMaintenanceTicketSchema,
   updateMaintenanceStatusSchema,
 } from "./maintenance.validation";
+import type { CreateMaintenanceTicketInput } from "./maintenance.types";
 
 export const maintenanceRouter = Router();
 const service = new MaintenanceService();
@@ -24,7 +25,7 @@ maintenanceRouter.post(
   requireRole("admin", "supervisor", "line_leader", "maintenance"),
   asyncHandler(async (req, res) => {
     const user = getAuthUser(req);
-    const input = createMaintenanceTicketSchema.parse(req.body);
+    const input = createMaintenanceTicketSchema.parse(req.body) as CreateMaintenanceTicketInput;
     const ticket = await service.createTicket(input);
 
     await auditService.record({

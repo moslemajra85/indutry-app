@@ -7,6 +7,7 @@ import {
   createProductionLineSchema,
   updateProductionLineStatusSchema,
 } from "./production.validation";
+import type { CreateProductionLineInput } from "./production.types";
 
 export const productionRouter = Router();
 const service = new ProductionService();
@@ -24,7 +25,7 @@ productionRouter.post(
   requireRole("admin", "supervisor"),
   asyncHandler(async (req, res) => {
     const user = getAuthUser(req);
-    const input = createProductionLineSchema.parse(req.body);
+    const input = createProductionLineSchema.parse(req.body) as CreateProductionLineInput;
     const line = await service.createLine(input);
 
     await auditService.record({

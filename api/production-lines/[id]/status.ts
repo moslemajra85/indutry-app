@@ -1,1 +1,1 @@
-export { default } from "../../../_handler";
+export { default } from "../../_handler";
